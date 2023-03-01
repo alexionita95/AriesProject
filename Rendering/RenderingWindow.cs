@@ -7,6 +7,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using Rendering.Loaders;
 
 namespace Rendering
 {
@@ -35,7 +36,7 @@ namespace Rendering
         public RenderingWindow(int width, int height, string title) : base(GameWindowSettings.Default, new NativeWindowSettings() { Size = (width, height), Title = title })
         {
 
-            camera = new Camera(new Vector3(0.0f, 0.0f, 3.0f), Size.X / (float)Size.Y);
+            camera = new Camera(new Vector3(0.0f, 0.0f, 5.0f), Size.X / (float)Size.Y);
         }
 
         protected override void OnLoad()
@@ -45,7 +46,7 @@ namespace Rendering
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
 
-            shader = new Shader(@"Resources\Shaders\default.vert", @"Resources\Shaders\material.frag");
+            shader = new Shader(@"Resources\Shaders\default.vert", @"Resources\Shaders\solidColor.frag");
             shader.Use();
 
 
@@ -183,7 +184,8 @@ new Vector3(-0.5f,  0.5f, -0.5f)
   new Vector2(0.0f, 0.0f),
   new Vector2(0.0f, 1.0f)
 };
-            mesh = new Mesh(vertices,normals,uvMap,new List<uint>());
+            OBJLoader loader = new OBJLoader("Resources/Models/cube.obj");
+            mesh = loader.Load();
             texture = Texture.LoadFromFile(@"Resources\Textures\Character.png");
             specular = Texture.LoadFromFile(@"Resources\Textures\Character_specular.png");
 
@@ -203,37 +205,48 @@ new Vector3(-0.5f,  0.5f, -0.5f)
             GL.Enable(EnableCap.DepthTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            
             GL.BindVertexArray(mesh.VertexArrayObject);
             texture.Use();
             specular.Use(TextureUnit.Texture1);
             shader.Use();
 
-            Matrix4 model = Matrix4.Identity;//Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(time));
+            //Matrix4 model = Matrix4.CreateScale(0.02f,0.02f,0.02f);//Matrix4.CreateRotationY((float)MathHelper.DegreesToRadians(time));
+            Matrix4 model = Matrix4.Identity;
             Matrix4 view = camera.GetViewMatrix();
             Matrix4 projection = camera.GetProjectionMatrix();
             //shader.SetVector3("objectColor", new Vector3(toyColor.R, toyColor.G, toyColor.B));
 
-            shader.SetInt("material.diffuse", 0);
-            shader.SetInt("material.specular",1);
-            shader.SetFloat("material.shininess", 32.0f);
+            /*  shader.SetInt("material.diffuse", 0);
+              shader.SetInt("material.specular",1);
+              shader.SetFloat("material.shininess", 32.0f);
 
-            shader.SetVector3("light.ambient", new Vector3(0.2f, 0.2f, 0.2f));
-            shader.SetVector3("light.diffuse", new Vector3(0.5f, 0.5f, 0.5f)); // darken the light a bit to fit the scene
-            shader.SetVector3("light.specular", new Vector3(1.0f, 1.0f, 1.0f));
-            shader.SetVector3("light.position", new Vector3(0f, 2f, 10f));
-
-
+              shader.SetVector3("light.ambient", new Vector3(0.2f, 0.2f, 0.2f));
+              shader.SetVector3("light.diffuse", new Vector3(0.5f, 0.5f, 0.5f)); // darken the light a bit to fit the scene
+              shader.SetVector3("light.specular", new Vector3(1.0f, 1.0f, 1.0f));
+              shader.SetVector3("light.position", new Vector3(0f, 2f, 10f));*/
             shader.SetVector3("viewPos", camera.Position);
+            shader.SetVector3("material.ambient", new Vector3(0.9f, 0.0f, 0.0f));
+            shader.SetVector3("material.diffuse", new Vector3(0.9f, 0.0f, 0.0f));
+            shader.SetVector3("material.specular", new Vector3(0.2f, 0.2f, 0.2f));
+            shader.SetFloat("material.shininess", 16.0f);
+
+            shader.SetVector3("light.position", new Vector3(0f, 2f, 10f));
+            shader.SetVector3("light.ambient", new Vector3(0.2f, 0.2f, 0.2f));
+            shader.SetVector3("light.diffuse", new Vector3(0.5f, 0.5f, 0.5f));
+            shader.SetVector3("light.specular", new Vector3(1.0f, 1.0f, 1.0f));
+
+
+            //shader.SetVector3("viewPos", camera.Position);
             shader.SetMatrix4("model", model);
             shader.SetMatrix4("view", view);
             shader.SetMatrix4("projection", projection);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
-            model = Matrix4.CreateScale(new Vector3(0.5f,0.5f,0.5f))*Matrix4.CreateTranslation(new Vector3(0f, 0f, 1.5f));
-            shader.SetMatrix4("model", model);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
-            //GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
+
+           // GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+
+            GL.DrawElements(PrimitiveType.Triangles, mesh.Indices.Count, DrawElementsType.UnsignedInt, 0);
             Context.SwapBuffers();
 
         }

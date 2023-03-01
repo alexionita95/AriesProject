@@ -19,7 +19,7 @@ namespace Rendering
         private int VertexBufferObject;
         private int NormalBufferObject;
         private int UVBufferObject;
-        private int ElementBufferObject;
+        public int ElementBufferObject;
 
 
         public Mesh(List<Vector3> vertices, List<Vector3> normals, List<Vector2> uVMap, List<uint> indices)
