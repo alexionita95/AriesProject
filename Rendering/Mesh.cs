@@ -40,7 +40,9 @@ namespace Rendering
             GL.BufferData(BufferTarget.ArrayBuffer, Vertices.Count * 3 * sizeof(float), Vertices.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-
+            ElementBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Count * sizeof(uint), Indices.ToArray(), BufferUsageHint.StaticDraw);
             NormalBufferObject = InitBuffer(BufferTarget.ArrayBuffer);
             GL.BufferData(BufferTarget.ArrayBuffer, Normals.Count * 3 * sizeof(float), Normals.ToArray(), BufferUsageHint.StaticDraw);
             GL.EnableVertexAttribArray(1);
@@ -51,9 +53,7 @@ namespace Rendering
             GL.EnableVertexAttribArray(2);
             GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
-            ElementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ElementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, Indices.Count * sizeof(uint), Indices.ToArray(), BufferUsageHint.StaticDraw);
+            
 
         }
 
